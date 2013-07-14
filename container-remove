@@ -1,0 +1,39 @@
+#!/bin/bash
+# a really lightweight containers api
+
+# cgroup root
+CGROUP=/sys/fs/cgroup
+
+# check if root
+WHOAMI=$(whoami)
+
+if [ "$WHOAMI" != "root" ]; then
+    echo usage: $0 must be run as root
+    exit 1
+fi
+
+# check args
+NAME=$1
+
+if [ -z "$1" ]; then
+    echo usage: $0 name
+    exit 1
+fi
+
+# check to see if a cgroup filesystem is mounted
+MOUNT=$(mount | grep cgroup);
+
+if [ -z "$MOUNT" ]; then
+    mount -t cgroup cgroup /sys/fs/cgroup
+fi
+
+# remove cgroup that is a subdirectory of cgroup root
+ls $CGROUP/$NAME > /dev/null 2>&1
+if [ "$?" -ne "0" ]; then
+    echo not removing $NAME: does not exist
+else
+    REMOVED=$(find $CGROUP/$NAME -depth -type d -print -exec rmdir {} \;)
+    echo removed $REMOVED
+fi
+
+exit 0

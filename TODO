@@ -1,0 +1,5 @@
+container-configure: limit cpu, memory, disk i/o, and configure NAT
+container-run: run an arbitrary command or executable in the container
+container-watch: create a background process to tail the output of running command(s)
+container-freeze: pause the processes running in the container
+container-resume: resume the processes running in the container

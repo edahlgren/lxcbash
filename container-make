@@ -1,0 +1,43 @@
+#!/bin/bash
+# a really lightweight containers api
+
+# cgroup root
+CGROUP=/sys/fs/cgroup
+
+# check if root
+WHOAMI=$(whoami)
+
+if [ "$WHOAMI" != "root" ]; then
+    echo usage: $0 must be run as root
+    exit 1
+fi
+
+# check args
+NAME=$1
+
+if [ -z "$1" ]; then
+    echo usage: $0 name
+    exit 1
+fi
+
+# check to see if a cgroup filesystem is mounted
+MOUNT=$(mount | grep cgroup);
+
+if [ -z "$MOUNT" ]; then
+    mount -t cgroup cgroup /sys/fs/cgroup
+fi
+
+# make a cgroup that is a subdirectory of root
+mkdir /sys/fs/cgroup/$NAME > /dev/null 2>&1
+
+if [ "$?" -ne "0" ]; then
+    echo not making $NAME: already exists
+else
+    echo new cgroup at /sys/fs/cgroup/$NAME
+
+    # set default cpu and memory so processes can be added to the cgroup
+    cat $CGROUP/cpuset.cpus > $CGROUP/$NAME/cpuset.cpus
+    cat $CGROUP/cpuset.mems > $CGROUP/$NAME/cpuset.mems
+fi
+
+exit 0
